@@ -20,13 +20,10 @@ import { useCase } from '../../context/CaseContext';
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Cases', path: '/cases', icon: FolderLock },
-  { name: 'Evidence', path: '/evidence', icon: FileSearch },
-  { name: 'Analysis', path: '/analysis', icon: Cpu },
-  { name: 'Timeline', path: '/timeline', icon: Clock },
-  { name: 'Reports', path: '/reports', icon: FileCheck },
-  { name: 'AI Assistant', path: '/ai-assistant', icon: Bot, badge: 'AI' },
-  { name: 'Settings', path: '/settings', icon: Settings },
+  { name: 'Report Cyber Crime', path: '/cases/new', icon: FolderLock, badge: 'New' },
+  { name: 'My Complaints', path: '/cases', icon: FileSearch },
+  { name: 'Upload Evidence', path: '/evidence/upload', icon: Cpu },
+  { name: 'AI Cyber Assistant', path: '/ai-assistant', icon: Bot, badge: 'AI' },
 ];
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
@@ -69,7 +66,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                   Crime<span className="text-cyan-400">Vision</span>
                 </h1>
                 <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest block -mt-0.5">
-                  CYBER FORENSICS v2.4
+                  CITIZEN COMPLAINT PORTAL
                 </span>
               </div>
             )}
@@ -113,18 +110,16 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           })}
         </div>
 
-        {/* Bottom Investigator Profile */}
+        {/* Bottom User Profile */}
         <div className="p-3 border-t border-slate-800 bg-slate-900/80">
           <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} p-2 rounded-xl bg-slate-950/60 border border-slate-800/80`}>
-            <img
-              src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'}
-              alt={user?.name}
-              className="w-8 h-8 rounded-lg object-cover ring-1 ring-cyan-500/40 flex-shrink-0"
-            />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-black text-xs ring-1 ring-cyan-500/40 flex-shrink-0">
+              {user?.name ? user.name[0].toUpperCase() : 'U'}
+            </div>
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-200 truncate">{user?.name || 'Investigator'}</p>
-                <p className="text-[10px] text-slate-400 font-mono truncate">{user?.role || 'Senior Officer'}</p>
+                <p className="text-xs font-semibold text-slate-200 truncate">{user?.name || 'Citizen User'}</p>
+                <p className="text-[10px] text-slate-400 font-mono truncate">{user?.email || 'User Account'}</p>
               </div>
             )}
             {!sidebarCollapsed && (

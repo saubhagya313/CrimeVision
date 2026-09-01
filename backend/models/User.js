@@ -24,8 +24,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['Investigator', 'Senior Analyst', 'Forensic Lead', 'Admin'],
-      default: 'Investigator',
+      enum: ['User', 'Citizen', 'Investigator', 'Admin'],
+      default: 'User',
     },
     badgeNumber: {
       type: String,

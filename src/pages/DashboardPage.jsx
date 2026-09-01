@@ -72,13 +72,13 @@ const DashboardPage = () => {
         <div className="space-y-2 relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-xs">
             <Activity className="w-3.5 h-3.5" />
-            <span>INVESTIGATOR COMMAND CENTER</span>
+            <span>CITIZEN CYBER COMPLAINT PORTAL</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-100 tracking-tight">
-            Good evening, <span className="cyber-gradient-text">{user?.name || 'Investigator'}</span>
+            Welcome, <span className="cyber-gradient-text">{user?.name || 'User'}</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
-            Here&apos;s an overview of your current active investigations and digital evidence analytics.
+            Submit cyber fraud complaints, track investigation progress, and attach transaction evidence.
           </p>
         </div>
 
@@ -86,18 +86,18 @@ const DashboardPage = () => {
         <div className="flex items-center gap-3 relative z-10">
           <button
             onClick={() => navigate('/cases/new')}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs font-mono uppercase tracking-wider shadow-cyan-glow transition-all flex items-center gap-2"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs font-mono uppercase tracking-wider shadow-cyan-glow transition-all flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Create New Case</span>
+            <span>Report Cyber Crime</span>
           </button>
 
           <button
             onClick={() => navigate('/evidence/upload')}
-            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-mono transition-colors flex items-center gap-2"
+            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-mono transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Upload className="w-4 h-4 text-cyan-400" />
-            <span>Upload Evidence</span>
+            <span>Attach Evidence</span>
           </button>
         </div>
       </div>

@@ -15,143 +15,86 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
+// Sample Citizens / Users who submit complaints
 const sampleUsers = [
   {
-    name: 'Inspector Rajesh Varma',
-    email: 'officer@cybercrime.gov.in',
-    password: 'Password@123',
-    role: 'Forensic Lead',
-    badgeNumber: 'CYB-4091',
-    department: 'Cyber Forensics Unit',
-    organization: 'State Cyber Crime Cell',
+    name: 'Ajit Kumar',
+    email: 'ajit@example.com',
+    password: 'password123',
+    role: 'User',
+    department: 'General Public',
+    organization: 'Citizen',
+    phone: '+91 98765 43210',
   },
   {
-    name: 'Analyst Priya Sharma',
-    email: 'priya.analyst@cybercrime.gov.in',
-    password: 'Password@123',
-    role: 'Investigator',
-    badgeNumber: 'CYB-8812',
-    department: 'Digital Intelligence Division',
-    organization: 'State Cyber Crime Cell',
+    name: 'Rahul Sharma',
+    email: 'rahul@example.com',
+    password: 'password123',
+    role: 'User',
+    department: 'General Public',
+    organization: 'Citizen',
+    phone: '+91 91234 56789',
+  },
+  {
+    name: 'Pooja Verma',
+    email: 'pooja@example.com',
+    password: 'password123',
+    role: 'User',
+    department: 'General Public',
+    organization: 'Citizen',
+    phone: '+91 99887 76655',
   },
 ];
 
+// Sample Problems / Cyber Complaints submitted by users
 const sampleCases = [
   {
     caseId: 'CV-2026-001',
-    title: 'High-Value UPI Cashback QR Scam - ₹2.4 Lakhs Loss',
-    description: 'Victim lured into scanning a fake cashback reward QR code on WhatsApp, which initiated unauthorized debits via forged VPA merchant endpoints.',
+    title: 'UPI Cashback QR Scam - ₹25,000 Deducted',
+    description: 'Received a WhatsApp message promising festive cashback. When I scanned the QR code and entered my PIN, ₹25,000 was debited from my bank account.',
     caseType: 'UPI / Payment Fraud',
-    priority: 'Critical',
-    riskLevel: 'Critical',
-    riskScore: 94,
-    status: 'Under Investigation',
-    lossAmount: 240000,
-    incidentDate: new Date('2026-02-18'),
-    victimInfo: {
-      name: 'Aditya Kumar Saxena',
-      phone: '+91 98112 34567',
-      email: 'aditya.saxena@example.com',
-      address: 'Indiranagar, Bengaluru, Karnataka',
-      bankName: 'HDFC Bank Ltd.',
-    },
-    suspectInfo: {
-      phoneNumbers: ['+91 99000 11223', '+91 88776 54321'],
-      upiIds: ['cyber-mule@okaxis', 'quick-refunds@ybl'],
-      bankAccounts: ['HDFC-991823004112'],
-      ipAddresses: ['103.212.44.18'],
-    },
-    tags: ['UPI PIN Scam', 'WhatsApp Fraud', 'Jamtara Link'],
-  },
-  {
-    caseId: 'CV-2026-002',
-    title: 'Electricity Disconnection Threat & KYC Impersonation',
-    description: 'Impersonation of State Electricity Board officer claiming immediate power cutoff unless bill cleared via suspicious APK installer link.',
-    caseType: 'Identity Theft & Impersonation',
     priority: 'High',
     riskLevel: 'High',
-    riskScore: 82,
-    status: 'Open',
-    lossAmount: 45000,
-    incidentDate: new Date('2026-02-22'),
+    riskScore: 88,
+    status: 'Submitted',
+    lossAmount: 25000,
+    incidentDate: new Date('2026-02-18'),
     victimInfo: {
-      name: 'Sunita Mehra',
-      phone: '+91 98450 11928',
-      email: 'sunita.m@example.com',
-      address: 'South Extension, New Delhi',
+      name: 'Ajit Kumar',
+      phone: '+91 98765 43210',
+      email: 'ajit@example.com',
+      address: 'Sector 62, Noida, UP',
       bankName: 'State Bank of India',
     },
     suspectInfo: {
-      phoneNumbers: ['+91 91238 47291'],
-      urls: ['http://uidai-aadhaar-portal-verify.in', 'http://bses-bill-quickpay.cc'],
+      phoneNumbers: ['+91 99000 11223'],
+      upiIds: ['cyber-mule@okaxis'],
     },
-    tags: ['KYC Scam', 'Electricity Threat', 'Smishing'],
+    tags: ['UPI PIN Scam', 'WhatsApp Fraud'],
   },
   {
-    caseId: 'CV-2026-003',
-    title: 'Telegram Crypto Arbitrage & High-Yield Ponzi Fraud',
-    description: 'Victim promised 300% weekly returns via fake AI automated crypto trading bot on Telegram, culminating in account freeze and extortion.',
-    caseType: 'Investment / Crypto Scam',
-    priority: 'High',
-    riskLevel: 'High',
-    riskScore: 89,
-    status: 'Under Investigation',
-    lossAmount: 580000,
-    incidentDate: new Date('2026-02-14'),
+    caseId: 'CV-2026-002',
+    title: 'Electricity Bill Disconnection Threat Message',
+    description: 'Got an SMS stating electricity will be disconnected tonight. A link was provided to pay an overdue amount of ₹4,500.',
+    caseType: 'Phishing & Credential Theft',
+    priority: 'Medium',
+    riskLevel: 'Medium',
+    riskScore: 72,
+    status: 'Submitted',
+    lossAmount: 4500,
+    incidentDate: new Date('2026-02-22'),
     victimInfo: {
-      name: 'Rohan Deshmukh',
-      phone: '+91 99201 88472',
-      email: 'rohan.desh@example.com',
-      address: 'Kothrud, Pune, Maharashtra',
-      bankName: 'ICICI Bank',
+      name: 'Rahul Sharma',
+      phone: '+91 91234 56789',
+      email: 'rahul@example.com',
+      address: 'Indiranagar, Bengaluru, Karnataka',
+      bankName: 'HDFC Bank',
     },
     suspectInfo: {
-      cryptoWallets: ['0x8492019482910fedcba9876543210abcdef12345', 'TRC20-TYuK8291823901849102'],
-      urls: ['http://solar-green-token.biz'],
+      phoneNumbers: ['+91 91238 47291'],
+      urls: ['http://bses-bill-quickpay.cc'],
     },
-    tags: ['Crypto Scam', 'Telegram Bot', 'USDT Extortion'],
-  },
-];
-
-const sampleEvidence = [
-  {
-    evidenceId: 'EVD-0001',
-    caseId: 'CV-2026-001',
-    fileName: 'whatsapp_qr_chat_evidence.png',
-    originalName: 'whatsapp_qr_chat_evidence.png',
-    fileType: 'Chat Log',
-    mimeType: 'image/png',
-    fileSize: '1.4 MB',
-    sha256Hash: 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-    processingStatus: 'Analyzed',
-    riskLevel: 'Critical',
-    riskScore: 96,
-    predictedThreat: 'UPI_Fraud',
-    ocrText: 'Scan this QR code in Google Pay and enter your 6 digit UPI PIN to receive ₹25,000 festive refund directly to account.',
-    extractedEntities: [
-      { type: 'Phone', value: '+91 99000 11223', label: 'Suspect Caller', risk: 'High' },
-      { type: 'UPI_ID', value: 'cyber-mule@okaxis', label: 'Destination VPA', risk: 'Critical' },
-      { type: 'Amount', value: '₹25,000', label: 'Claimed Cashback', risk: 'Medium' },
-    ],
-  },
-  {
-    evidenceId: 'EVD-0002',
-    caseId: 'CV-2026-001',
-    fileName: 'bank_debit_sms_statement.txt',
-    originalName: 'bank_debit_sms_statement.txt',
-    fileType: 'SMS',
-    mimeType: 'text/plain',
-    fileSize: '12 KB',
-    sha256Hash: 'sha256:ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb',
-    processingStatus: 'Analyzed',
-    riskLevel: 'High',
-    riskScore: 88,
-    predictedThreat: 'UPI_Fraud',
-    ocrText: 'Dear Customer, your A/c has been debited by Rs 1,00,000 to VPA quick-refunds@ybl. Ref: UPI/602910482910.',
-    extractedEntities: [
-      { type: 'UPI_ID', value: 'quick-refunds@ybl', label: 'Flagged Mule VPA', risk: 'Critical' },
-      { type: 'Amount', value: 'Rs 1,00,000', label: 'Debit Sum', risk: 'High' },
-    ],
+    tags: ['Electricity Threat', 'Smishing'],
   },
 ];
 
@@ -169,32 +112,22 @@ const seedDatabase = async () => {
     await Report.deleteMany({});
     await AuditLog.deleteMany({});
 
-    console.log('Seeding demo investigators...');
+    console.log('Seeding sample users...');
     const createdUsers = await User.create(sampleUsers);
 
-    console.log('Seeding cybercrime cases...');
-    const casesWithOfficer = sampleCases.map((c) => ({
+    console.log('Seeding sample complaints submitted by users...');
+    const casesWithUser = sampleCases.map((c, index) => ({
       ...c,
-      assignedOfficer: createdUsers[0]._id,
-      officerName: createdUsers[0].name,
+      submittedBy: createdUsers[index % createdUsers.length]._id,
+      userName: createdUsers[index % createdUsers.length].name,
     }));
-    await Case.create(casesWithOfficer);
+    await Case.create(casesWithUser);
 
-    console.log('Seeding digital forensic evidence...');
-    await Evidence.create(sampleEvidence);
-
-    console.log('Seeding audit logs...');
-    await AuditLog.create({
-      action: 'SYSTEM_CONFIG_CHANGED',
-      performedBy: createdUsers[0]._id,
-      userName: createdUsers[0].name,
-      details: 'Database seeded with default forensic intelligence data.',
-    });
-
-    console.log('\n\x1b[32m✔ SUCCESS: Database seeded with initial CrimeVision data!\x1b[0m');
-    console.log('Demo Credentials:');
-    console.log('  Email:    officer@cybercrime.gov.in');
-    console.log('  Password: Password@123\n');
+    console.log('\n\x1b[32m✔ SUCCESS: Database seeded with User & Complaint data!\x1b[0m');
+    console.log('Sample User Credentials:');
+    console.log('  1) Email: ajit@example.com   | Password: password123');
+    console.log('  2) Email: rahul@example.com  | Password: password123');
+    console.log('  3) Email: pooja@example.com  | Password: password123\n');
 
     process.exit(0);
   } catch (error) {

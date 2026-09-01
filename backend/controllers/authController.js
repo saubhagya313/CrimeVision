@@ -26,11 +26,11 @@ export const registerUser = async (req, res, next) => {
     }
 
     // Check if user already exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: email.toLowerCase().trim() });
     if (userExists) {
       return res.status(400).json({
         success: false,
-        message: 'An investigator account with this email already exists.',
+        message: 'Email already exists. Please login or use a different email.',
       });
     }
 
@@ -39,10 +39,9 @@ export const registerUser = async (req, res, next) => {
       name,
       email,
       password,
-      role: role || 'Investigator',
-      department: department || 'Cyber Forensics Unit',
-      organization: organization || 'State Police Cyber Cell',
-      badgeNumber: badgeNumber || `CYB-${Math.floor(1000 + Math.random() * 9000)}`,
+      role: role || 'User',
+      department: department || 'General User',
+      organization: organization || 'Public User',
     });
 
     const token = generateToken(user._id);
@@ -54,7 +53,7 @@ export const registerUser = async (req, res, next) => {
       userName: user.name,
       userRole: user.role,
       ipAddress: req.ip || '127.0.0.1',
-      details: `New investigator registered: ${user.name} (${user.email}) - Badge: ${user.badgeNumber}`,
+      details: `New user registered: ${user.name} (${user.email})`,
     }).catch(() => {});
 
     res.status(201).json({
@@ -118,7 +117,7 @@ export const loginUser = async (req, res, next) => {
       userName: user.name,
       userRole: user.role,
       ipAddress: req.ip || '127.0.0.1',
-      details: `Investigator logged in: ${user.name} (${user.email})`,
+      details: `User logged in: ${user.name} (${user.email})`,
     }).catch(() => {});
 
     res.status(200).json({

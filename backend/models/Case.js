@@ -35,8 +35,8 @@ const caseSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Open', 'Under Investigation', 'Pending Review', 'Closed', 'Archived'],
-      default: 'Open',
+      enum: ['Submitted', 'Open', 'Under Investigation', 'Pending Review', 'Closed', 'Archived'],
+      default: 'Submitted',
       index: true,
     },
     priority: {

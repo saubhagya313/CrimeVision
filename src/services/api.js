@@ -33,41 +33,54 @@ let notificationsState = [...MOCK_NOTIFICATIONS];
 
 export const authApi = {
   login: async (email, password) => {
-    await delay(600);
-    if (!email || !password) {
-      throw new Error('Please enter both email and password.');
+    try {
+      const response = await apiClient.post('/auth/login', { email, password });
+      return response.data;
+    } catch (error) {
+      const errorMsg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        (error.message === 'Network Error' ? 'Cannot connect to backend server. Make sure it is running on port 5000.' : error.message);
+      throw new Error(errorMsg);
     }
-    return {
-      token: 'mock-jwt-token-crimevision-2026',
-      user: { ...MOCK_USER, email }
-    };
   },
 
-  register: async (userData) => {
-    await delay(700);
-    return {
-      token: 'mock-jwt-token-new-reg-2026',
-      user: {
-        id: `usr_${Date.now()}`,
-        name: userData.fullName || 'Investigator',
-        email: userData.email,
-        role: 'Cyber Crime Investigator',
-        organization: userData.organization || 'State Police',
-        department: 'Cyber Forensics Unit'
-      }
-    };
+  register: async ({ name, email, password }) => {
+    try {
+      const response = await apiClient.post('/auth/register', { name, email, password });
+      return response.data;
+    } catch (error) {
+      const errorMsg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        (error.message === 'Network Error' ? 'Cannot connect to backend server. Make sure it is running on port 5000.' : error.message);
+      throw new Error(errorMsg);
+    }
   },
 
   forgotPassword: async (email) => {
-    await delay(500);
-    return { success: true, message: `Password reset link sent to ${email}` };
+    try {
+      const response = await apiClient.post('/auth/forgot-password', { email });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || error.message);
+    }
   },
 
   getCurrentUser: async () => {
-    await delay(200);
-    return MOCK_USER;
+    try {
+      const token = localStorage.getItem('crimevision_token');
+      if (!token) return null;
+      const response = await apiClient.get('/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data.user;
+    } catch (error) {
+      return null;
+    }
   }
 };
+
 
 export const casesApi = {
   getCases: async (filters = {}) => {

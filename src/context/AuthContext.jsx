@@ -6,43 +6,44 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('crimevision_user');
-    return saved ? JSON.parse(saved) : MOCK_USER; // Default logged in for seamless demo UX
+    try {
+      const saved = localStorage.getItem('crimevision_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const token = localStorage.getItem('crimevision_token');
-    return !!token || true; // Default true for instant exploration
+    return !!localStorage.getItem('crimevision_token');
   });
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('crimevision_user', JSON.stringify(user));
-      localStorage.setItem('crimevision_token', 'mock-jwt-token-crimevision-2026');
-    } else {
-      localStorage.removeItem('crimevision_user');
-      localStorage.removeItem('crimevision_token');
-    }
-  }, [user]);
 
   const login = async (email, password) => {
     setLoading(true);
     try {
       const response = await authApi.login(email, password);
-      setUser(response.user);
-      setIsAuthenticated(true);
+      if (response.token && response.user) {
+        localStorage.setItem('crimevision_token', response.token);
+        localStorage.setItem('crimevision_user', JSON.stringify(response.user));
+        setUser(response.user);
+        setIsAuthenticated(true);
+      }
       return response;
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (userData) => {
+  const register = async ({ name, email, password }) => {
     setLoading(true);
     try {
-      const response = await authApi.register(userData);
-      setUser(response.user);
-      setIsAuthenticated(true);
+      const response = await authApi.register({ name, email, password });
+      if (response.token && response.user) {
+        localStorage.setItem('crimevision_token', response.token);
+        localStorage.setItem('crimevision_user', JSON.stringify(response.user));
+        setUser(response.user);
+        setIsAuthenticated(true);
+      }
       return response;
     } finally {
       setLoading(false);
