@@ -10,6 +10,8 @@ import authRoutes from './routes/authRoutes.js';
 import caseRoutes from './routes/caseRoutes.js';
 import evidenceRoutes from './routes/evidenceRoutes.js';
 import analysisRoutes from './routes/analysisRoutes.js';
+import complaintRoutes from './routes/complaintRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import timelineRoutes from './routes/timelineRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import statsRoutes from './routes/statsRoutes.js';
@@ -25,13 +27,13 @@ const __dirname = path.dirname(__filename);
 // Initialize Express App
 const app = express();
 
-// Connect to MongoDB Atlas
+// Connect to MongoDB
 connectDB();
 
 // Global Middlewares
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
@@ -44,17 +46,19 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ONLINE',
-    service: 'CrimeVision Cyber Forensics Backend API',
-    version: '1.0.0',
+    service: 'CrimeVision Cyber Assistance Platform Backend API',
+    version: '2.0.0',
     timestamp: new Date().toISOString(),
   });
 });
 
 // Mount Application Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/analysis', analysisRoutes);
+app.use('/api/complaints', complaintRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/evidence', evidenceRoutes);
-app.use('/api/analysis', analysisRoutes);
 app.use('/api/timeline', timelineRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/stats', statsRoutes);
@@ -68,7 +72,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`\n================================================================`);
-  console.log(`🛡️  CRIMEVISION FORENSICS BACKEND API`);
+  console.log(`🛡️  CRIMEVISION CYBER ASSISTANCE PLATFORM BACKEND API`);
   console.log(`🚀 Server running on: http://localhost:${PORT}`);
   console.log(`📡 Health Check:     http://localhost:${PORT}/api/health`);
   console.log(`================================================================\n`);

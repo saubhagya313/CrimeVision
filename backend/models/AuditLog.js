@@ -8,12 +8,21 @@ const auditLogSchema = new mongoose.Schema(
       enum: [
         'USER_LOGIN',
         'USER_REGISTER',
+        'USER_ACTIVATED',
+        'USER_DEACTIVATED',
+        'USER_ROLE_UPDATED',
+        'AI_ANALYSIS_EXECUTED',
+        'ANALYSIS_DELETED',
+        'FEEDBACK_SUBMITTED',
+        'COMPLAINT_DRAFT_CREATED',
+        'COMPLAINT_DRAFT_UPDATED',
+        'COMPLAINT_DRAFT_EXPORTED',
+        'COMPLAINT_DRAFT_DELETED',
         'CASE_CREATED',
         'CASE_UPDATED',
         'CASE_DELETED',
         'EVIDENCE_UPLOADED',
         'EVIDENCE_HASH_VERIFIED',
-        'AI_ANALYSIS_EXECUTED',
         'REPORT_GENERATED',
         'TIMELINE_EVENT_ADDED',
         'SYSTEM_CONFIG_CHANGED',
@@ -30,7 +39,7 @@ const auditLogSchema = new mongoose.Schema(
     },
     userRole: {
       type: String,
-      default: 'Investigator',
+      default: 'User',
     },
     caseId: {
       type: String,
@@ -55,7 +64,7 @@ const auditLogSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: { createdAt: true, updatedAt: false }, // Immutable audit logs
+    timestamps: { createdAt: true, updatedAt: false },
   }
 );
 

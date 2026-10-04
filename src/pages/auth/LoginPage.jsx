@@ -23,11 +23,15 @@ const LoginPage = () => {
     }
 
     try {
-      await login(email.trim().toLowerCase(), password);
+      const res = await login(email.trim().toLowerCase(), password);
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 800);
+        if (res?.user?.role === 'Admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      }, 700);
     } catch (err) {
       setError(err.message || 'Authentication failed');
     }
@@ -50,7 +54,7 @@ const LoginPage = () => {
             Crime<span className="text-cyan-400">Vision</span>
           </h1>
           <p className="text-xs text-slate-400 font-mono">
-            Sign in to your account
+            AI-Powered Cybercrime Assistance & Reporting Platform
           </p>
         </div>
 
@@ -119,6 +123,35 @@ const LoginPage = () => {
             )}
           </button>
         </form>
+
+        {/* Quick Demo Test Buttons for College Presentation / Evaluation */}
+        <div className="pt-2 border-t border-slate-800 space-y-2">
+          <p className="text-[10px] font-mono text-slate-400 text-center uppercase tracking-wider">
+            ⚡ Quick Demo Accounts (Click to Fill)
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@crimevision.in');
+                setPassword('password123');
+              }}
+              className="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/30 text-amber-400 text-[11px] font-mono flex items-center justify-center gap-1.5 transition-all text-center"
+            >
+              🛠️ <span>Admin Panel</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('ajit@example.com');
+                setPassword('password123');
+              }}
+              className="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-cyan-500/30 text-cyan-400 text-[11px] font-mono flex items-center justify-center gap-1.5 transition-all text-center"
+            >
+              👤 <span>Citizen Portal</span>
+            </button>
+          </div>
+        </div>
 
         <div className="text-center pt-2 border-t border-slate-800/80 text-xs font-mono text-slate-400">
           Don't have an account?{' '}

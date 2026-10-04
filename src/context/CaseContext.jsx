@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { casesApi, evidenceApi, statsApi } from '../services/api';
+import { useAuth } from './AuthContext';
 
 const CaseContext = createContext(null);
 
 export const CaseProvider = ({ children }) => {
+  const { user } = useAuth();
   const [cases, setCases] = useState([]);
   const [evidenceList, setEvidenceList] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -52,10 +54,12 @@ export const CaseProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    refreshCases();
-    refreshEvidence();
-    refreshStats();
-  }, []);
+    if (user) {
+      refreshCases();
+      refreshEvidence();
+      refreshStats();
+    }
+  }, [user]);
 
   const addCase = async (caseData) => {
     const created = await casesApi.createCase(caseData);
@@ -70,6 +74,12 @@ export const CaseProvider = ({ children }) => {
     refreshCases();
     showToast(`Evidence ${created.fileName} uploaded & analyzed!`, 'success');
     return created;
+  };
+
+  const removeCase = async (caseId) => {
+    await casesApi.deleteCase(caseId);
+    setCases(prev => prev.filter(c => c.id !== caseId && c.caseId !== caseId));
+    showToast(`Case ${caseId} deleted successfully!`, 'info');
   };
 
   return (
@@ -88,7 +98,8 @@ export const CaseProvider = ({ children }) => {
       refreshCases,
       refreshEvidence,
       addCase,
-      addEvidence
+      addEvidence,
+      removeCase,
     }}>
       {children}
     </CaseContext.Provider>

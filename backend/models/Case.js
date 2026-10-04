@@ -92,6 +92,18 @@ const caseSchema = new mongoose.Schema(
       type: String,
       default: 'Unassigned',
     },
+    submittedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    userName: {
+      type: String,
+      default: 'Citizen',
+    },
+    officerNotes: {
+      type: String,
+      default: '',
+    },
     evidenceCount: {
       type: Number,
       default: 0,

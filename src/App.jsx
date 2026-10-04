@@ -10,15 +10,20 @@ import AppLayout from './components/layout/AppLayout';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
-// User Portal Pages
+// Citizen / User Pages
 import DashboardPage from './pages/DashboardPage';
-import CasesPage from './pages/CasesPage';
-import CreateCasePage from './pages/CreateCasePage';
-import CaseDetailPage from './pages/CaseDetailPage';
-import EvidenceListPage from './pages/EvidenceListPage';
-import EvidenceUploadPage from './pages/EvidenceUploadPage';
-import EvidenceDetailPage from './pages/EvidenceDetailPage';
-import AIAssistantPage from './pages/AIAssistantPage';
+import AnalysisPage from './pages/AnalysisPage';
+import ComplaintDraftPage from './pages/ComplaintDraftPage';
+import MyAnalysesPage from './pages/MyAnalysesPage';
+import NearbyPolicePage from './pages/NearbyPolicePage';
+
+// Admin Pages
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminAnalysesPage from './pages/admin/AdminAnalysesPage';
+import AdminComplaintsPage from './pages/admin/AdminComplaintsPage';
+import AdminAuditLogsPage from './pages/admin/AdminAuditLogsPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 
 // Protected Route Guard
 const ProtectedRoute = ({ children }) => {
@@ -29,10 +34,25 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Public Route Guard (Redirects to dashboard if already logged in)
+// Admin-Only Route Guard
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  if (user?.role !== 'Admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
+
+// Public Route Guard (Redirects to appropriate portal if already logged in)
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   if (isAuthenticated) {
+    if (user?.role === 'Admin') {
+      return <Navigate to="/admin" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
   return children;
@@ -62,7 +82,7 @@ function App() {
               }
             />
 
-            {/* Protected User Dashboard Routes */}
+            {/* Protected Routes Container */}
             <Route
               path="/"
               element={
@@ -71,21 +91,65 @@ function App() {
                 </ProtectedRoute>
               }
             >
+              {/* Default Index Route */}
               <Route index element={<Navigate to="/dashboard" replace />} />
+
+              {/* Citizen / User Routes */}
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="analyze" element={<AnalysisPage />} />
+              <Route path="complaint-generator" element={<ComplaintDraftPage />} />
+              <Route path="my-analyses" element={<MyAnalysesPage />} />
+              <Route path="nearby-police" element={<NearbyPolicePage />} />
 
-              {/* Complaints & Cases */}
-              <Route path="cases" element={<CasesPage />} />
-              <Route path="cases/new" element={<CreateCasePage />} />
-              <Route path="cases/:caseId" element={<CaseDetailPage />} />
-
-              {/* Evidence */}
-              <Route path="evidence" element={<EvidenceListPage />} />
-              <Route path="evidence/upload" element={<EvidenceUploadPage />} />
-              <Route path="evidence/:evidenceId" element={<EvidenceDetailPage />} />
-
-              {/* AI Cyber Safety Assistant */}
-              <Route path="ai-assistant" element={<AIAssistantPage />} />
+              {/* Admin Management Routes */}
+              <Route
+                path="admin"
+                element={
+                  <AdminRoute>
+                    <AdminDashboardPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/users"
+                element={
+                  <AdminRoute>
+                    <AdminUsersPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/analyses"
+                element={
+                  <AdminRoute>
+                    <AdminAnalysesPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/complaints"
+                element={
+                  <AdminRoute>
+                    <AdminComplaintsPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/audit-logs"
+                element={
+                  <AdminRoute>
+                    <AdminAuditLogsPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/settings"
+                element={
+                  <AdminRoute>
+                    <AdminSettingsPage />
+                  </AdminRoute>
+                }
+              />
 
               {/* Fallback */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />

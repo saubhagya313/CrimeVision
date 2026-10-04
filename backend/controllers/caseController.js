@@ -12,6 +12,15 @@ export const getCases = async (req, res, next) => {
     const { status, priority, riskLevel, search, caseType } = req.query;
     const query = {};
 
+    // Role-based case isolation:
+    // If citizen/user, show only their submitted cases or cases where victim email matches
+    if (req.user && (req.user.role === 'User' || req.user.role === 'Citizen')) {
+      query.$or = [
+        { submittedBy: req.user._id },
+        { 'victimInfo.email': req.user.email ? req.user.email.toLowerCase() : '' },
+      ];
+    }
+
     if (status && status !== 'All') {
       if (status === 'High Risk') {
         query.riskLevel = { $in: ['High', 'Critical'] };
@@ -33,12 +42,18 @@ export const getCases = async (req, res, next) => {
     }
 
     if (search) {
-      query.$or = [
+      const searchCondition = [
         { caseId: { $regex: search, $options: 'i' } },
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
         { 'victimInfo.name': { $regex: search, $options: 'i' } },
       ];
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, { $or: searchCondition }];
+        delete query.$or;
+      } else {
+        query.$or = searchCondition;
+      }
     }
 
     const cases = await Case.find(query).sort({ createdAt: -1 });
@@ -132,16 +147,18 @@ export const createCase = async (req, res, next) => {
       priority: priority || 'High',
       riskLevel,
       riskScore,
-      status: status || 'Open',
+      status: status || 'Submitted',
       lossAmount: lossAmount ? Number(lossAmount) : 0,
       incidentDate: incidentDate || new Date(),
-      assignedOfficer: req.user?._id,
-      officerName: req.user?.name || 'Investigator',
+      submittedBy: req.user?._id,
+      userName: req.user?.name || victimName || 'Citizen User',
+      assignedOfficer: req.user?.role === 'Admin' ? req.user?._id : undefined,
+      officerName: req.user?.role === 'Admin' ? req.user?.name : 'Unassigned',
       tags: tags || [],
       victimInfo: {
-        name: victimName || 'Undisclosed',
-        phone: victimPhone || 'N/A',
-        email: victimEmail || 'N/A',
+        name: victimName || req.user?.name || 'Undisclosed',
+        phone: victimPhone || req.user?.phone || 'N/A',
+        email: victimEmail || req.user?.email || 'N/A',
         address: victimAddress || 'N/A',
         bankName: victimBank || 'N/A',
       },
