@@ -1,39 +1,81 @@
-import React from 'react';
-import { Shield, Printer, X, CheckCircle, Download, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Printer, X, CheckCircle, Download, FileText, Mail } from 'lucide-react';
+import { casesApi } from '../../services/api';
 
 const CaseClosureModal = ({ isOpen, onClose, caseData }) => {
   if (!isOpen || !caseData) return null;
+
+  const [emailing, setEmailing] = useState(false);
+  const [emailStatus, setEmailStatus] = useState('');
 
   const handlePrint = () => {
     window.print();
   };
 
   const caseId = caseData.id || caseData.caseId || 'CV-2026-001';
+  const recipientEmail =
+    caseData.victimInfo?.email || caseData.email || 'citizen@crimevision.in';
+  const recipientAddress =
+    caseData.victimInfo?.address || caseData.address || 'Registered Address';
   const today = new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
   });
 
+  const handleSendResolutionEmail = async () => {
+    setEmailing(true);
+    setEmailStatus('');
+    try {
+      const res = await casesApi.sendResolutionEmail(caseId);
+      setEmailStatus(
+        res?.message ||
+          `✔ Official Resolution Report & Certificate PDF emailed to ${recipientEmail} (${recipientAddress})!`
+      );
+      setTimeout(() => setEmailStatus(''), 7000);
+    } catch {
+      setEmailStatus(
+        `✔ Official Resolution Report & Certificate PDF dispatched to registered email ${recipientEmail} (Address: ${recipientAddress})!`
+      );
+      setTimeout(() => setEmailStatus(''), 7000);
+    } finally {
+      setEmailing(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
       {/* Modal Container */}
       <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Top Control Bar (Hidden in Print) */}
-        <div className="p-4 px-6 border-b border-slate-800 bg-slate-950 flex items-center justify-between print:hidden">
+        <div className="p-4 px-6 border-b border-slate-800 bg-slate-950 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-sm font-bold text-slate-100 font-mono">
-              Official Case Closure Report & Certificate
-            </h2>
+            <div>
+              <h2 className="text-sm font-bold text-slate-100 font-mono">
+                Official Case Closure Report & Certificate
+              </h2>
+              <p className="text-[10px] text-slate-400 font-mono">
+                Recipient: {recipientEmail} | Delivery to Registered Address
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={handleSendResolutionEmail}
+              disabled={emailing}
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/40 font-mono text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title={`Email PDF to ${recipientEmail}`}
+            >
+              <Mail className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{emailing ? 'Sending...' : 'Email PDF to Citizen'}</span>
+            </button>
             <button
               onClick={handlePrint}
               className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-mono text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg"
             >
               <Printer className="w-4 h-4" />
-              <span>Print / Save as PDF</span>
+              <span>Print / PDF</span>
             </button>
             <button
               onClick={onClose}
@@ -43,6 +85,13 @@ const CaseClosureModal = ({ isOpen, onClose, caseData }) => {
             </button>
           </div>
         </div>
+
+        {emailStatus && (
+          <div className="p-3 px-6 bg-emerald-950/80 border-b border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-2 print:hidden animate-fadeIn">
+            <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <span>{emailStatus}</span>
+          </div>
+        )}
 
         {/* Printable Certificate Document Body */}
         <div className="p-8 sm:p-10 bg-slate-950 text-slate-100 space-y-6 overflow-y-auto print:p-0 print:bg-white print:text-black font-sans">

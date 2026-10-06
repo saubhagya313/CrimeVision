@@ -6,6 +6,7 @@ import {
   calculateHeuristicRisk,
   generateTimelineFromText,
 } from '../utils/iocExtractor.js';
+import { sendForensicSummaryEmail } from '../utils/emailService.js';
 
 /**
  * @desc    Run real-time threat classification, entity extraction & duplicate check
@@ -157,13 +158,41 @@ export const runTextAnalysis = async (req, res, next) => {
             'Never share OTPs or enter UPI PINs on prompts to receive money.',
           ];
 
+    // 6. Automated Forensic Summary Email Dispatch to Registered User
+    let emailStatus = null;
+    if (req.user && req.user.email) {
+      emailStatus = await sendForensicSummaryEmail({
+        recipientEmail: req.user.email,
+        recipientName: req.user.name,
+        recipientAddress: req.user.address || req.user.city || '',
+        analysisId: newAnalysis.analysisId,
+        predictedCategory: newAnalysis.predictedCategory,
+        riskLevel: newAnalysis.riskLevel,
+        riskScore: newAnalysis.riskScore,
+        confidence: newAnalysis.confidence,
+        extractedEntities: entities,
+        indicators: heuristics.indicators,
+        safetyGuidance,
+        userId: req.user._id,
+      }).catch((err) => {
+        console.warn('Forensic email dispatch warning:', err.message);
+        return null;
+      });
+    }
+
     res.status(201).json({
       success: true,
       isDuplicate: false,
-      message: 'Evidence analysis completed successfully.',
+      message: emailStatus
+        ? `Evidence analysis completed & Forensic Summary emailed to ${req.user.email}.`
+        : 'Evidence analysis completed successfully.',
+      emailSent: !!emailStatus,
+      emailRecipient: req.user?.email || '',
       data: {
         ...newAnalysis.toObject(),
         safetyGuidance,
+        emailSent: !!emailStatus,
+        emailRecipient: req.user?.email || '',
       },
     });
   } catch (error) {
@@ -368,6 +397,81 @@ export const getAdminAnalyses = async (req, res, next) => {
       highRiskCount,
       lowRiskCount,
       data: analyses,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Manual re-send or trigger forensic summary email by analysis ID
+ * @route   POST /api/analysis/:id/send-email
+ * @access  Private
+ */
+export const emailAnalysisSummary = async (req, res, next) => {
+  try {
+    const analysis = await Analysis.findOne({
+      $or: [
+        { analysisId: req.params.id },
+        { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
+      ],
+    });
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: 'Analysis record not found.',
+      });
+    }
+
+    if (
+      req.user.role !== 'Admin' &&
+      analysis.userId.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied.',
+      });
+    }
+
+    const recipientEmail = req.user.email;
+    const recipientName = req.user.name;
+    const recipientAddress = req.user.address || req.user.city || '';
+
+    const safetyGuidance =
+      analysis.riskLevel === 'High' || analysis.riskLevel === 'Critical'
+        ? [
+            'Do NOT send any money, scan QR codes, or enter your UPI PIN.',
+            'Do NOT share OTPs, passwords, or bank account credentials with anyone.',
+            'Do NOT click suspicious links or download external APK applications.',
+            'Immediately preserve all chat logs, screenshots, and transaction UTR numbers.',
+            'Call the National Cybercrime Helpline 1930 immediately or visit cybercrime.gov.in.',
+          ]
+        : [
+            'No significant suspicious indicators associated with known fraud patterns were identified in this sample.',
+            'Always double-check sender email handles and verify official websites before making online payments.',
+            'Never share OTPs or enter UPI PINs on prompts to receive money.',
+          ];
+
+    const emailStatus = await sendForensicSummaryEmail({
+      recipientEmail,
+      recipientName,
+      recipientAddress,
+      analysisId: analysis.analysisId,
+      predictedCategory: analysis.predictedCategory,
+      riskLevel: analysis.riskLevel,
+      riskScore: analysis.riskScore,
+      confidence: analysis.confidence,
+      extractedEntities: analysis.entities || [],
+      indicators: analysis.indicators || [],
+      safetyGuidance,
+      userId: req.user._id,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Forensic Summary & Threat Analysis Report successfully emailed to ${recipientEmail}.`,
+      deliveryDetails: emailStatus?.deliveryDetails || null,
     });
   } catch (error) {
     next(error);

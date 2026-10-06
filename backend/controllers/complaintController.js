@@ -1,6 +1,7 @@
 import ComplaintDraft from '../models/ComplaintDraft.js';
 import Analysis from '../models/Analysis.js';
 import AuditLog from '../models/AuditLog.js';
+import { sendComplaintDraftPdfEmail } from '../utils/emailService.js';
 
 /**
  * @desc    Create a new editable police complaint draft
@@ -322,6 +323,54 @@ export const getAdminComplaints = async (req, res, next) => {
       totalComplaints,
       data: complaints,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Send formal police complaint draft PDF to user's registered email
+ * @route   POST /api/complaints/:id/send-email
+ * @access  Private
+ */
+export const emailComplaintDraft = async (req, res, next) => {
+  try {
+    const draft = await ComplaintDraft.findOne({
+      $or: [
+        { draftId: req.params.id },
+        { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
+      ],
+    });
+
+    if (!draft) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint draft not found.',
+      });
+    }
+
+    const recipientEmail = draft.complainantInfo?.email || req.user.email;
+    const recipientAddress = [
+      draft.complainantInfo?.address || req.user.address,
+      draft.complainantInfo?.city || req.user.city,
+      draft.complainantInfo?.state || req.user.state,
+      draft.complainantInfo?.pincode || req.user.pincode,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
+    const result = await sendComplaintDraftPdfEmail({
+      recipientEmail,
+      recipientName: draft.complainantInfo?.name || req.user.name,
+      recipientAddress: recipientAddress || 'Verified Citizen Address',
+      draftId: draft.draftId,
+      incidentType: draft.incidentInfo?.incidentType || 'Cyber Fraud',
+      lossAmount: draft.incidentInfo?.financialLoss || 0,
+      policeStation: draft.policeStation?.name || 'Cyber Crime Police Station',
+      userId: req.user._id,
+    });
+
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }

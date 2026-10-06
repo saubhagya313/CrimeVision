@@ -31,7 +31,10 @@ import {
   Eye,
   X,
   FileSearch,
+  Mail,
+  Send,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { analysisApi } from '../services/api';
 import AnalysisReportModal from '../components/common/AnalysisReportModal';
 import {
@@ -55,6 +58,7 @@ const SAMPLE_TEMPLATES = {
 };
 
 const AnalysisPage = () => {
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -79,6 +83,10 @@ const AnalysisPage = () => {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [copiedValue, setCopiedValue] = useState(null);
+
+  // Automated Email Dispatch State
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailNotice, setEmailNotice] = useState(null);
 
   // User Feedback State
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
@@ -174,6 +182,7 @@ const AnalysisPage = () => {
     setDuplicateBanner(null);
     setFeedbackSubmitted(false);
     setFeedbackType(null);
+    setEmailNotice(null);
 
     let sourceType = 'Suspicious Text';
     if (activeTab === 'image') sourceType = 'Screenshot / Image';
@@ -193,15 +202,35 @@ const AnalysisPage = () => {
         setDuplicateBanner(response.data);
         setAnalysisResult(response.data);
         setEditableTimeline(response.data.timeline || []);
+        if (response.emailSent || response.data?.emailSent) {
+          setEmailNotice(`Forensic Summary & Risk Report emailed to ${response.emailRecipient || user?.email || 'registered email'}`);
+        }
       } else {
         const result = response.data;
         setAnalysisResult(result);
         setEditableTimeline(result.timeline || []);
+        if (response.emailSent || result?.emailSent) {
+          setEmailNotice(`Forensic Summary & Risk Report emailed to ${response.emailRecipient || user?.email || 'registered email'}`);
+        }
       }
     } catch (err) {
       setErrorMessage(err.message || 'Failed to complete threat analysis. Please try again.');
     } finally {
       setAnalyzing(false);
+    }
+  };
+
+  // Re-send Forensic Summary Email
+  const handleResendEmail = async () => {
+    if (!analysisResult) return;
+    setEmailSending(true);
+    try {
+      await analysisApi.sendAnalysisEmail(analysisResult.analysisId || analysisResult._id);
+      setEmailNotice(`Forensic Summary & Risk Report successfully emailed to ${user?.email || 'registered email'}`);
+    } catch (err) {
+      alert(`Email dispatch failed: ${err.message}`);
+    } finally {
+      setEmailSending(false);
     }
   };
 
@@ -661,6 +690,50 @@ const AnalysisPage = () => {
               </div>
             </div>
           )}
+
+          {/* ========================================================================= */}
+          {/* FORENSIC SUMMARY EMAIL DISPATCH NOTIFICATION */}
+          {/* ========================================================================= */}
+          <div className="p-4 rounded-xl bg-slate-900/90 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex-shrink-0">
+                <Mail className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-100">
+                    Forensic Summary & Risk Report Dispatched
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3" /> Emailed
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5 font-mono">
+                  Delivered to <strong className="text-cyan-400 font-semibold">{user?.email || 'registered user email'}</strong> • Includes threat breakdown, suspect indicators & 1930 guidance
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleResendEmail}
+              disabled={emailSending}
+              className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-cyan-500/40 text-xs font-mono font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 flex-shrink-0"
+              title="Send another copy of this Forensic Summary to your registered email"
+            >
+              {emailSending ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                  <span>Sending...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Resend Email</span>
+                </>
+              )}
+            </button>
+          </div>
 
           {/* ========================================================================= */}
           {/* DETECTED INFORMATION (NLP ENTITY EXTRACTION) */}

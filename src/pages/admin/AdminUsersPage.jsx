@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   FileText,
   Activity,
+  MapPin,
 } from 'lucide-react';
 import { adminApi } from '../../services/api';
 
@@ -188,15 +189,23 @@ const AdminUsersPage = () => {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-slate-300 space-y-0.5">
-                      <div className="flex items-center gap-1 text-[11px] text-slate-300">
-                        <Mail className="w-3 h-3 text-slate-400" />
-                        <span>{u.email}</span>
+                    <td className="py-3.5 px-4 font-mono text-slate-300 space-y-1">
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-200">
+                        <Mail className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                        <span className="font-semibold">{u.email}</span>
                       </div>
                       {u.phone && (
-                        <div className="flex items-center gap-1 text-[11px] text-slate-400">
-                          <Phone className="w-3 h-3 text-slate-400" />
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                          <Phone className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
                           <span>{u.phone}</span>
+                        </div>
+                      )}
+                      {(u.address || u.city) && (
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                          <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                          <span className="truncate max-w-[200px]" title={`${u.address || ''}, ${u.city || ''} ${u.state || ''} ${u.pincode || ''}`}>
+                            {u.city ? `${u.city}${u.state ? `, ${u.state}` : ''}` : u.address}
+                          </span>
                         </div>
                       )}
                     </td>

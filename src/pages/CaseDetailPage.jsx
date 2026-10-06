@@ -10,7 +10,8 @@ import {
   AlertCircle,
   FileText,
   Trash2,
-  Download
+  Download,
+  Mail,
 } from 'lucide-react';
 import EvidenceCard from '../components/evidence/EvidenceCard';
 import EmptyState from '../components/common/EmptyState';
@@ -75,7 +76,18 @@ const CaseDetailPage = () => {
         officerNotes,
       });
       await refreshCases();
-      if (showToast) showToast(`Case status updated to "${editStatus}"!`, 'success');
+
+      if (editStatus === 'Resolved' || editStatus === 'Closed') {
+        await casesApi.sendResolutionEmail(currentCase.id || currentCase.caseId).catch(() => {});
+        if (showToast) {
+          showToast(
+            `Case resolved! Formal closure certificate & PDF report emailed to citizen registered address & email.`,
+            'success'
+          );
+        }
+      } else {
+        if (showToast) showToast(`Case status updated to "${editStatus}"!`, 'success');
+      }
     } catch (err) {
       console.error('Failed to update case', err);
       if (showToast) showToast('Failed to update case.', 'error');

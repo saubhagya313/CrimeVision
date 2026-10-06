@@ -16,7 +16,19 @@ const generateToken = (id) => {
  */
 export const registerUser = async (req, res, next) => {
   try {
-    const { name, email, password, role, department, organization, badgeNumber } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role,
+      phone,
+      address,
+      city,
+      state,
+      pincode,
+      department,
+      organization,
+    } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -25,8 +37,10 @@ export const registerUser = async (req, res, next) => {
       });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Check if user already exists
-    const userExists = await User.findOne({ email: email.toLowerCase().trim() });
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -34,14 +48,26 @@ export const registerUser = async (req, res, next) => {
       });
     }
 
-    // Create user
+    // Designate Admin if email is the configured admin email (ajitkumarsethi34@gmail.com or admin@crimevision.in)
+    const isAdminEmail =
+      normalizedEmail === 'ajitkumarsethi34@gmail.com' ||
+      normalizedEmail === 'admin@crimevision.in';
+
+    const assignedRole = isAdminEmail ? 'Admin' : role || 'User';
+
+    // Create user with address coordinates for official complaint/resolution delivery
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: normalizedEmail,
       password,
-      role: role || 'User',
-      department: department || 'General User',
-      organization: organization || 'Public User',
+      phone: phone || '',
+      address: address || '',
+      city: city || '',
+      state: state || '',
+      pincode: pincode || '',
+      role: assignedRole,
+      department: department || (isAdminEmail ? 'Platform Administration & Cyber Cell' : 'General User'),
+      organization: organization || (isAdminEmail ? 'CrimeVision System Management' : 'Citizen'),
     });
 
     const token = generateToken(user._id);
@@ -53,7 +79,7 @@ export const registerUser = async (req, res, next) => {
       userName: user.name,
       userRole: user.role,
       ipAddress: req.ip || '127.0.0.1',
-      details: `New user registered: ${user.name} (${user.email})`,
+      details: `New ${user.role} registered: ${user.name} (${user.email}). Address: ${user.city || 'N/A'}`,
     }).catch(() => {});
 
     res.status(201).json({
@@ -63,6 +89,11 @@ export const registerUser = async (req, res, next) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        state: user.state,
+        pincode: user.pincode,
         role: user.role,
         badgeNumber: user.badgeNumber,
         department: user.department,
@@ -90,8 +121,33 @@ export const loginUser = async (req, res, next) => {
       });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Find user by email and select password
-    const user = await User.findOne({ email }).select('+password');
+    let user = await User.findOne({ email: normalizedEmail }).select('+password');
+
+    // Auto-provision primary Admin account if missing from database
+    if (
+      !user &&
+      (normalizedEmail === 'ajitkumarsethi34@gmail.com' || normalizedEmail === 'admin@crimevision.in') &&
+      password === 'password123'
+    ) {
+      await User.create({
+        name: normalizedEmail === 'ajitkumarsethi34@gmail.com' ? 'Ajit Kumar Sethi (System Admin)' : 'CrimeVision System Admin',
+        email: normalizedEmail,
+        password: 'password123',
+        role: 'Admin',
+        department: 'Platform Administration & Cyber Cell',
+        organization: 'CrimeVision System Management',
+        phone: '+91 98765 43210',
+        address: 'Plot 42, Cyber Security Complex, Sector 62',
+        city: 'Noida',
+        state: 'Uttar Pradesh',
+        pincode: '201301',
+        isActive: true,
+      });
+      user = await User.findOne({ email: normalizedEmail }).select('+password');
+    }
 
     if (!user) {
       return res.status(401).json({
@@ -106,6 +162,15 @@ export const loginUser = async (req, res, next) => {
         success: false,
         message: 'Invalid email or password.',
       });
+    }
+
+    // Auto-elevate configured admin email if not already Admin
+    if (
+      (normalizedEmail === 'ajitkumarsethi34@gmail.com' || normalizedEmail === 'admin@crimevision.in') &&
+      user.role !== 'Admin'
+    ) {
+      user.role = 'Admin';
+      await user.save();
     }
 
     const token = generateToken(user._id);
@@ -127,6 +192,11 @@ export const loginUser = async (req, res, next) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        state: user.state,
+        pincode: user.pincode,
         role: user.role,
         badgeNumber: user.badgeNumber,
         department: user.department,
@@ -152,17 +222,21 @@ export const getMe = async (req, res) => {
 };
 
 /**
- * @desc    Update investigator profile
+ * @desc    Update investigator/citizen profile
  * @route   PUT /api/auth/profile
  * @access  Private
  */
 export const updateProfile = async (req, res, next) => {
   try {
     const fieldsToUpdate = {};
-    const { name, phone, department, organization, avatar } = req.body;
+    const { name, phone, address, city, state, pincode, department, organization, avatar } = req.body;
 
     if (name) fieldsToUpdate.name = name;
     if (phone) fieldsToUpdate.phone = phone;
+    if (address !== undefined) fieldsToUpdate.address = address;
+    if (city !== undefined) fieldsToUpdate.city = city;
+    if (state !== undefined) fieldsToUpdate.state = state;
+    if (pincode !== undefined) fieldsToUpdate.pincode = pincode;
     if (department) fieldsToUpdate.department = department;
     if (organization) fieldsToUpdate.organization = organization;
     if (avatar) fieldsToUpdate.avatar = avatar;

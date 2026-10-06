@@ -17,6 +17,20 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const sampleUsers = [
   {
+    name: 'Ajit Kumar Sethi (System Admin)',
+    email: 'ajitkumarsethi34@gmail.com',
+    password: 'password123',
+    role: 'Admin',
+    department: 'Platform Administration & Cyber Cell',
+    organization: 'CrimeVision System Management',
+    phone: '+91 98765 43210',
+    address: 'Plot 42, Cyber Security Complex, Sector 62',
+    city: 'Noida',
+    state: 'Uttar Pradesh',
+    pincode: '201301',
+    isActive: true,
+  },
+  {
     name: 'CrimeVision System Admin',
     email: 'admin@crimevision.in',
     password: 'password123',
@@ -24,6 +38,10 @@ const sampleUsers = [
     department: 'Platform Administration',
     organization: 'CrimeVision System Management',
     phone: '+91 98111 22334',
+    address: 'HQ Cyber Command, Institutional Area',
+    city: 'New Delhi',
+    state: 'Delhi',
+    pincode: '110001',
     isActive: true,
   },
   {
@@ -34,6 +52,10 @@ const sampleUsers = [
     department: 'General Public',
     organization: 'Citizen',
     phone: '+91 98765 43210',
+    address: 'Flat 402, Sunshine Heights, Sector 62',
+    city: 'Noida',
+    state: 'Uttar Pradesh',
+    pincode: '201301',
     isActive: true,
   },
   {
@@ -44,6 +66,10 @@ const sampleUsers = [
     department: 'General Public',
     organization: 'Citizen',
     phone: '+91 91234 56789',
+    address: 'B-14, Mayur Vihar Phase 1',
+    city: 'East Delhi',
+    state: 'Delhi',
+    pincode: '110091',
     isActive: true,
   },
   {
@@ -54,6 +80,10 @@ const sampleUsers = [
     department: 'General Public',
     organization: 'Citizen',
     phone: '+91 99887 76655',
+    address: 'House 88, Gomti Nagar Extension',
+    city: 'Lucknow',
+    state: 'Uttar Pradesh',
+    pincode: '226010',
     isActive: true,
   },
   {
@@ -64,6 +94,10 @@ const sampleUsers = [
     department: 'General Public',
     organization: 'Citizen',
     phone: '+91 98220 11223',
+    address: 'Flat 12B, Bandra West',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pincode: '400050',
     isActive: false, // Inactive user for testing admin user management
   },
 ];
@@ -338,7 +372,8 @@ const seedDatabase = async () => {
     console.log('\n\x1b[32m✔ SUCCESS: Database seeded with standard CV-ANL and CV-CMP Reference IDs!\x1b[0m');
     console.log('================================================================');
     console.log('🛠️  ADMIN (APPLICATION MANAGEMENT) CREDENTIALS:');
-    console.log('   Email: admin@crimevision.in   | Password: password123');
+    console.log('   1) Email: ajitkumarsethi34@gmail.com | Password: password123');
+    console.log('   2) Email: admin@crimevision.in        | Password: password123');
     console.log('----------------------------------------------------------------');
     console.log('👤 CITIZEN / USER CREDENTIALS:');
     console.log('   1) Email: ajit@example.com   | Password: password123');

@@ -144,15 +144,28 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         </div>
 
         {/* Citizen Emergency Quick Tip */}
+        {/* Citizen Emergency & Admin Contact Tip */}
         {!sidebarCollapsed && !isAdmin && (
-          <div className="mx-3 mb-3 p-2.5 rounded-xl bg-slate-900/90 border border-slate-800/90 text-xs">
-            <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-[11px] mb-1">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              <span>Cyber Emergency?</span>
+          <div className="mx-3 mb-3 p-2.5 rounded-xl bg-slate-900/90 border border-slate-800/90 text-xs space-y-1.5">
+            <div>
+              <div className="flex items-center gap-1.5 text-rose-400 font-semibold text-[11px]">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>Cyber Emergency?</span>
+              </div>
+              <p className="text-slate-400 text-[10px] leading-relaxed mt-0.5">
+                Dial <span className="text-cyan-400 font-bold">1930</span> or visit <span className="text-cyan-400 font-medium">cybercrime.gov.in</span>.
+              </p>
             </div>
-            <p className="text-slate-400 text-[10px] leading-relaxed">
-              Dial <span className="text-cyan-400 font-bold">1930</span> or visit <span className="text-cyan-400 font-medium">cybercrime.gov.in</span> immediately.
-            </p>
+            <div className="pt-1.5 border-t border-slate-800 text-[10px]">
+              <span className="text-slate-400 block font-mono text-[9px] uppercase">Platform Admin Support:</span>
+              <a
+                href="mailto:ajitkumarsethi34@gmail.com"
+                className="text-amber-400 hover:underline font-mono truncate block text-[10px]"
+                title="ajitkumarsethi34@gmail.com"
+              >
+                ajitkumarsethi34@gmail.com
+              </a>
+            </div>
           </div>
         )}
 

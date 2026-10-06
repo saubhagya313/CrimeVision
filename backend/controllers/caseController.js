@@ -1,6 +1,7 @@
 import Case from '../models/Case.js';
 import Evidence from '../models/Evidence.js';
 import AuditLog from '../models/AuditLog.js';
+import { sendResolvedCasePdfEmail } from '../utils/emailService.js';
 
 /**
  * @desc    Get all cases with optional filtering & search
@@ -261,6 +262,51 @@ export const deleteCase = async (req, res, next) => {
       success: true,
       message: `Case ${caseItem.caseId} deleted successfully.`,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Send official Case Resolution PDF / Closure Certificate to user's registered email
+ * @route   POST /api/cases/:id/send-resolution-email
+ * @access  Private
+ */
+export const emailCaseResolutionPdf = async (req, res, next) => {
+  try {
+    const caseItem = await Case.findOne({
+      $or: [
+        { caseId: req.params.id },
+        { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
+      ],
+    });
+
+    if (!caseItem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Case not found.',
+      });
+    }
+
+    const recipientEmail = caseItem.victimInfo?.email || req.user?.email;
+    const recipientAddress = caseItem.victimInfo?.address || req.user?.address || '';
+
+    const result = await sendResolvedCasePdfEmail({
+      recipientEmail,
+      recipientName: caseItem.victimInfo?.name || caseItem.userName || req.user?.name,
+      recipientAddress,
+      caseId: caseItem.caseId,
+      caseTitle: caseItem.title,
+      caseType: caseItem.caseType,
+      lossAmount: caseItem.lossAmount,
+      officerName: caseItem.officerName || 'Inspector Vikram Rathore',
+      officerNotes:
+        caseItem.officerNotes ||
+        'Case marked as solved. Accompanying digital evidence analysis, bank notices, and audit trails closed.',
+      userId: req.user?._id,
+    });
+
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }

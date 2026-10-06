@@ -34,9 +34,19 @@ export const authApi = {
     }
   },
 
-  register: async ({ name, email, password, phone }) => {
+  register: async ({ name, email, password, phone, address, city, state, pincode }) => {
     try {
-      const response = await apiClient.post('/auth/register', { name, email, password, phone, role: 'User' });
+      const response = await apiClient.post('/auth/register', {
+        name,
+        email,
+        password,
+        phone,
+        address,
+        city,
+        state,
+        pincode,
+        role: 'User',
+      });
       return response.data;
     } catch (error) {
       const errorMsg =
@@ -143,6 +153,19 @@ export const analysisApi = {
       throw new Error(error.response?.data?.message || error.message);
     }
   },
+
+  sendAnalysisEmail: async (id) => {
+    try {
+      const response = await apiClient.post(
+        `/analysis/${id}/send-email`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || error.message);
+    }
+  },
 };
 
 // ==========================================
@@ -210,6 +233,19 @@ export const complaintsApi = {
       const response = await apiClient.get('/complaints/admin/all', {
         headers: getAuthHeaders(),
       });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || error.message);
+    }
+  },
+
+  sendComplaintEmail: async (id) => {
+    try {
+      const response = await apiClient.post(
+        `/complaints/${id}/send-email`,
+        {},
+        { headers: getAuthHeaders() }
+      );
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || error.message);
@@ -457,11 +493,38 @@ export const searchPoliceStations = (query = '') => {
 // 6. BACKWARDS-COMPATIBILITY EXPORTS
 // ==========================================
 export const casesApi = {
-  getCases: async () => [],
-  getCaseById: async (id) => ({ id, title: 'Case record' }),
-  createCase: async (c) => c,
-  updateCase: async (id, u) => u,
-  deleteCase: async () => ({ success: true }),
+  getCases: async (params = {}) => {
+    try {
+      const res = await apiClient.get('/cases', { headers: getAuthHeaders(), params });
+      return res.data.data || [];
+    } catch {
+      return [];
+    }
+  },
+  getCaseById: async (id) => {
+    try {
+      const res = await apiClient.get(`/cases/${id}`, { headers: getAuthHeaders() });
+      return res.data.data;
+    } catch {
+      return { id, title: 'Case record' };
+    }
+  },
+  createCase: async (c) => {
+    const res = await apiClient.post('/cases', c, { headers: getAuthHeaders() });
+    return res.data.data || res.data;
+  },
+  updateCase: async (id, u) => {
+    const res = await apiClient.put(`/cases/${id}`, u, { headers: getAuthHeaders() });
+    return res.data.data || res.data;
+  },
+  deleteCase: async (id) => {
+    const res = await apiClient.delete(`/cases/${id}`, { headers: getAuthHeaders() });
+    return res.data;
+  },
+  sendResolutionEmail: async (id) => {
+    const res = await apiClient.post(`/cases/${id}/send-resolution-email`, {}, { headers: getAuthHeaders() });
+    return res.data;
+  },
 };
 
 export const evidenceApi = {

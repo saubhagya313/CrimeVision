@@ -133,12 +133,13 @@ const LoginPage = () => {
             <button
               type="button"
               onClick={() => {
-                setEmail('admin@crimevision.in');
+                setEmail('ajitkumarsethi34@gmail.com');
                 setPassword('password123');
               }}
-              className="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/30 text-amber-400 text-[11px] font-mono flex items-center justify-center gap-1.5 transition-all text-center"
+              className="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-400 text-[11px] font-mono flex items-center justify-center gap-1.5 transition-all text-center truncate shadow-sm"
+              title="Admin: ajitkumarsethi34@gmail.com"
             >
-              🛠️ <span>Admin Panel</span>
+              🛠️ <span>Admin (Ajit Sethi)</span>
             </button>
             <button
               type="button"

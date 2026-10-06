@@ -23,6 +23,8 @@ import {
   Check,
   Clock,
   Lock,
+  Mail,
+  Send,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { complaintsApi } from '../services/api';
@@ -40,15 +42,15 @@ const ComplaintDraftPage = () => {
     existingDraft?.draftId || `CV-CMP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
   );
 
-  // 1. Complainant Details
+  // 1. Complainant Details (Auto-populated from citizen registered address & contact coordinates)
   const [complainant, setComplainant] = useState({
     name: existingDraft?.complainantInfo?.name || user?.name || '',
     mobile: existingDraft?.complainantInfo?.mobile || user?.phone || '+91 ',
     email: existingDraft?.complainantInfo?.email || user?.email || '',
-    address: existingDraft?.complainantInfo?.address || 'Sector 62, Noida',
-    city: existingDraft?.complainantInfo?.city || 'Noida',
-    state: existingDraft?.complainantInfo?.state || 'Uttar Pradesh',
-    pincode: existingDraft?.complainantInfo?.pincode || '201301',
+    address: existingDraft?.complainantInfo?.address || user?.address || 'Flat 402, Sunshine Heights, Sector 62',
+    city: existingDraft?.complainantInfo?.city || user?.city || 'Noida',
+    state: existingDraft?.complainantInfo?.state || user?.state || 'Uttar Pradesh',
+    pincode: existingDraft?.complainantInfo?.pincode || user?.pincode || '201301',
   });
 
   // 2. Incident Details
@@ -160,6 +162,67 @@ const ComplaintDraftPage = () => {
     }
   };
 
+  const [emailing, setEmailing] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState('');
+
+  // Dispatch formal Complaint PDF report to user's registered email
+  const handleEmailDraft = async () => {
+    setEmailing(true);
+    setEmailSuccess('');
+    try {
+      const draftPayload = {
+        draftId,
+        complainantInfo: {
+          name: complainant.name,
+          email: complainant.email,
+          phone: complainant.phone,
+          address: complainant.address,
+          city: complainant.city,
+          state: complainant.state,
+          pincode: complainant.pincode,
+          idProofType: complainant.idProofType,
+          idProofNumber: complainant.idProofNumber,
+        },
+        incidentInfo: {
+          incidentType,
+          incidentDate,
+          financialLoss: Number(financialLoss) || 0,
+          transactionRef,
+          bankName,
+          platformUsed,
+          incidentDescription,
+        },
+        suspectInfo: {
+          suspectName,
+          suspectContact,
+          suspectAccount,
+          suspectUpiId,
+          suspectProfileLink,
+        },
+        evidence: {
+          hasEvidenceFile: !!evidenceAttached,
+          evidenceFileName: evidenceAttached?.name || '',
+          evidenceTextPreview: evidenceAttached?.text || '',
+        },
+        timeline: timelineEvents,
+        policeStation,
+      };
+
+      await complaintsApi.createDraft(draftPayload).catch(() => {});
+
+      const res = await complaintsApi.sendComplaintEmail(draftId);
+      setEmailSuccess(
+        res?.message ||
+          `✔ Official Complaint PDF successfully emailed to ${complainant.email} (${complainant.address}, ${complainant.city})!`
+      );
+      setTimeout(() => setEmailSuccess(''), 7000);
+    } catch (err) {
+      alert(`Email dispatch error: ${err.message}`);
+    } finally {
+      setEmailing(false);
+    }
+  };
+
   // Trigger Print / PDF download
   const handlePrint = () => {
     window.print();
@@ -178,25 +241,42 @@ const ComplaintDraftPage = () => {
             <span>Back to Analysis Hub</span>
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={handleSaveDraft}
               disabled={saving}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
             >
               <Save className="w-4 h-4 text-cyan-400" />
               <span>{saving ? 'Saving...' : 'Save Draft'}</span>
             </button>
 
             <button
+              onClick={handleEmailDraft}
+              disabled={emailing}
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+              title={`Email PDF copy to ${complainant.email}`}
+            >
+              <Mail className="w-4 h-4 text-cyan-400" />
+              <span>{emailing ? 'Sending Email...' : 'Email PDF to My Registered Email'}</span>
+            </button>
+
+            <button
               onClick={handlePrint}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-cyan-glow flex items-center gap-2 transition-all"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-cyan-glow flex items-center gap-2 transition-all cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>Download / Print Complaint PDF</span>
+              <span>Download / Print PDF</span>
             </button>
           </div>
         </div>
+
+        {emailSuccess && (
+          <div className="p-3.5 rounded-xl bg-cyan-950/70 border border-cyan-500/50 text-cyan-300 text-xs font-mono flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+            <span>{emailSuccess}</span>
+          </div>
+        )}
 
         {saveSuccess && (
           <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">

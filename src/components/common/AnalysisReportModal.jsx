@@ -19,10 +19,17 @@ import {
   Globe,
   DollarSign,
   Building,
+  Mail,
+  RefreshCw,
 } from 'lucide-react';
+import { analysisApi } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const AnalysisReportModal = ({ analysis, onClose, onGenerateComplaint }) => {
+  const { user } = useAuth();
   const [copied, setCopied] = React.useState(false);
+  const [emailing, setEmailing] = React.useState(false);
+  const [emailed, setEmailed] = React.useState(false);
 
   if (!analysis) return null;
 
@@ -75,6 +82,19 @@ DISCLAIMER: AI-Assisted Assessment for Digital Evidence Assistance. Does not con
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleEmailReport = async () => {
+    setEmailing(true);
+    try {
+      await analysisApi.sendAnalysisEmail(analysis.analysisId || analysis._id);
+      setEmailed(true);
+      setTimeout(() => setEmailed(false), 3500);
+    } catch (err) {
+      alert(`Failed to email report: ${err.message}`);
+    } finally {
+      setEmailing(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
       <div className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
@@ -88,6 +108,30 @@ DISCLAIMER: AI-Assisted Assessment for Digital Evidence Assistance. Does not con
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleEmailReport}
+              disabled={emailing}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-medium flex items-center gap-1.5 border border-slate-700 hover:border-cyan-500/40 transition-colors disabled:opacity-50"
+              title={`Email report to ${user?.email || 'registered address'}`}
+            >
+              {emailing ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                  <span>Sending...</span>
+                </>
+              ) : emailed ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-emerald-400">Emailed!</span>
+                </>
+              ) : (
+                <>
+                  <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Email Report</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={handleCopySummary}
               className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-medium flex items-center gap-1.5 border border-slate-700 transition-colors"

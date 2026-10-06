@@ -34,10 +34,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async ({ name, email, password }) => {
+  const register = async (registrationData) => {
     setLoading(true);
     try {
-      const response = await authApi.register({ name, email, password });
+      const response = await authApi.register(registrationData);
       if (response.token && response.user) {
         localStorage.setItem('crimevision_token', response.token);
         localStorage.setItem('crimevision_user', JSON.stringify(response.user));
